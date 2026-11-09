@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kuis Alat Kesehatan (Medical Devices Quiz)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f0fdf4;
+        }
+        .fade-in {
+            animation: fadeIn 0.4s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4">
+
+    <div class="max-w-3xl w-full bg-white rounded-2xl shadow-xl overflow-hidden border border-emerald-100" id="quiz-container">
+        <!-- Header -->
+        <div class="bg-gradient-to-r from-emerald-600 to-teal-700 p-6 text-white text-center relative">
+            <h1 class="text-2xl font-bold tracking-wide"><i class="fa-solid me-2 fa-kit-medical"></i>Kuis Alat Kesehatan</h1>
+            <p class="text-emerald-100 text-sm mt-1">Materi: Alat Pembalut hingga Alat Kontrasepsi (IUD)</p>
+        </div>
+
+        <!-- Start Screen -->
+        <div id="start-screen" class="p-8 text-center fade-in">
+            <div class="w-24 h-24 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-6 text-4xl shadow-inner">
+                <i class="fa-solid fa-user-nurse"></i>
+            </div>
+            <h2 class="text-2xl font-bold text-gray-800 mb-2">Uji Pemahaman Alkes Anda!</h2>
+            <p class="text-gray-600 mb-6 max-w-md mx-auto">
+                Kuis ini terdiri dari **10 soal interaktif** mengenai nama, fungsi, dan karakteristik alat kesehatan berdasarkan panduan modul kefarmasian.
+            </p>
+            <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-4 mb-6 max-w-md mx-auto text-left text-sm text-emerald-800">
+                <ul class="space-y-2">
+                    <li><i class="fa-solid fa-check text-emerald-600 me-2"></i><strong>10 Soal Pilihan Ganda</strong></li>
+                    <li><i class="fa-solid fa-check text-emerald-600 me-2"></i><strong>Petunjuk (Hint) & Pembahasan</strong> Lengkap</li>
+                    <li><i class="fa-solid fa-check text-emerald-600 me-2"></i>Mencakup pembalut, hospital wares, kateter, bedah & KB</li>
+                </ul>
+            </div>
+            <button onclick="startQuiz()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-8 py-3 rounded-xl shadow-lg hover:shadow-emerald-200 transition duration-200 transform hover:-translate-y-0.5">
+                Mulai Kuis Sekarang <i class="fa-solid fa-arrow-right ms-2"></i>
+            </button>
+        </div>
+
+        <!-- Quiz Screen -->
+        <div id="quiz-screen" class="p-6 md:p-8 hidden fade-in">
+            <!-- Progress & Timer -->
+            <div class="flex justify-between items-center mb-6 pb-4 border-b border-gray-100">
+                <span class="text-sm font-semibold text-emerald-700 bg-emerald-100 px-3 py-1 rounded-full" id="question-tracker">Soal 1 dari 10</span>
+                <span class="text-sm font-medium text-gray-500" id="tag-badge">Topik: Alkes</span>
+            </div>
+
+            <!-- Question Text -->
+            <h3 class="text-lg md:text-xl font-semibold text-gray-800 mb-6 leading-relaxed" id="question-text">
+                Pertanyaan akan muncul di sini...
+            </h3>
+
+            <!-- Options -->
+            <div class="space-y-3 mb-6" id="options-container">
+                <!-- Dynamic Options -->
+            </div>
+
+            <!-- Hint Box -->
+            <div id="hint-box" class="hidden bg-amber-50 border border-amber-200 rounded-xl p-3 mb-6 text-sm text-amber-800 fade-in">
+                <span class="font-semibold"><i class="fa-solid fa-lightbulb text-amber-500 me-2"></i>Petunjuk:</span> <span id="hint-text"></span>
+            </div>
+
+            <!-- Rationale / Feedback Box -->
+            <div id="feedback-box" class="hidden p-4 rounded-xl mb-6 text-sm fade-in">
+                <p id="feedback-title" class="font-bold mb-1"></p>
+                <p id="feedback-text" class="text-gray-700"></p>
+            </div>
+
+            <!-- Footer Controls -->
+            <div class="flex justify-between items-center pt-4 border-t border-gray-100">
+                <button onclick="toggleHint()" id="btn-hint" class="text-amber-600 hover:text-amber-700 text-sm font-medium px-3 py-2 rounded-lg border border-amber-200 hover:bg-amber-50 transition">
+                    <i class="fa-regular fa-lightbulb me-1"></i> Petunjuk
+                </button>
+                <button onclick="nextQuestion()" id="btn-next" disabled class="bg-emerald-600 opacity-50 cursor-not-allowed hover:bg-emerald-700 text-white font-medium px-6 py-2.5 rounded-xl transition shadow">
+                    Lanjut <i class="fa-solid fa-arrow-right ms-1"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Result Screen -->
+        <div id="result-screen" class="p-8 text-center hidden fade-in">
+            <div class="w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-4 text-4xl shadow-lg" id="result-icon-bg">
+                <i class="fa-solid text-white" id="result-icon"></i>
+            </div>
+            <h2 class="text-3xl font-bold text-gray-800 mb-1" id="result-score">0 / 100</h2>
+            <p class="text-gray-600 mb-6 font-medium" id="result-message">Pesan hasil kuis...</p>
+            
+            <div class="bg-gray-50 rounded-2xl p-6 mb-6 text-left max-w-md mx-auto border border-gray-200">
+                <h4 class="font-semibold text-gray-700 mb-3 text-center border-b pb-2">Ringkasan Performa</h4>
+                <div class="flex justify-between text-sm py-1">
+                    <span class="text-gray-600">Jawaban Benar:</span>
+                    <span class="font-bold text-emerald-600" id="correct-count">0</span>
+                </div>
+                <div class="flex justify-between text-sm py-1">
+                    <span class="text-gray-600">Jawaban Salah:</span>
+                    <span class="font-bold text-rose-600" id="wrong-count">0</span>
+                </div>
+            </div>
+
+            <button onclick="resetQuiz()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-8 py-3 rounded-xl shadow-lg transition">
+                <i class="fa-solid fa-rotate-right me-2"></i> Ulangi Kuis
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const quizData = [
+            {
+                question: "Alat pembalut berupa kain berlubang-lubang kecil (seperti ram kawat) berwarna putih yang digunakan untuk menutup luka guna mencegah kontaminasi mikroorganisme disebut...",
+                options: [
+                    { text: "Kasa Steril (Gaas)", isCorrect: true, rationale: "Kasa steril (gaas) memiliki struktur kain berlubang kecil yang berfungsi untuk menutup luka dan mencegah masuknya kuman." },
+                    { text: "Plester Rol Kain", isCorrect: false, rationale: "Plester rol kain berfungsi perekat untuk menempelkan kasa pada kulit, bukan berupa kain berlubang penutup luka utama." },
+                    { text: "Pembalut Gips", isCorrect: false, rationale: "Pembalut gips digunakan untuk imobilisasi tulang yang patah, bukan kasa penutup luka biasa." },
+                    { text: "Elastic Bandage", isCorrect: false, rationale: "Pembalut elastis digunakan untuk menopang sendi atau otot yang cedera/terkilir." }
+                ],
+                hint: "Ciri khas alat ini adalah teksturnya yang berlubang-lubang seperti jaring/ram kawat halus.",
+                tag: "Alat Pembalut"
+            },
+            {
+                question: "Seorang pasien penderita wasir (ambeien) membutuhkan alas duduk khusus agar tidak menekan daerah anus dan merasa nyaman saat duduk. Alat kesehatan yang tepat adalah...",
+                options: [
+                    { text: "Warm Water Zak", isCorrect: false, rationale: "Warm water zak adalah kantung karet untuk kompres air panas." },
+                    { text: "Ice Bag", isCorrect: false, rationale: "Ice bag digunakan untuk kompres dingin pada cedera atau demam." },
+                    { text: "Windring", isCorrect: true, rationale: "Windring adalah bantal pelampung/alas duduk melingkar berlubang tengah untuk penderita ambeien/wasir." },
+                    { text: "Bedpan", isCorrect: false, rationale: "Bedpan (pispot) digunakan untuk menampung feses pasien di tempat tidur." }
+                ],
+                hint: "Alat berbentuk lingkaran atau persegi tiup dengan lubang di bagian tengahnya.",
+                tag: "Alat Perawatan"
+            },
+            {
+                question: "Alat kesehatan yang dipasang pada pasien pasca operasi pembuat stoma di perut untuk menampung feses, cairan, dan gas adalah...",
+                options: [
+                    { text: "Urine Bag", isCorrect: false, rationale: "Urine bag khusus untuk menampung cairan urine dari saluran kemih." },
+                    { text: "Colostomy Bag", isCorrect: true, rationale: "Colostomy bag (stoma bag) dipasang pada dinding perut untuk menampung feses pasca pembedahan usus." },
+                    { text: "Blood Bag", isCorrect: false, rationale: "Blood bag digunakan untuk menampung darah dari donor." },
+                    { text: "Pus Basin", isCorrect: false, rationale: "Pus basin (baskom ginjal) adalah tempat penampungan sementara muntah/kapas bekas." }
+                ],
+                hint: "Disebut juga dengan istilah Stoma Bag.",
+                tag: "Alat Menampung"
+            },
+            {
+                question: "Manakah alat diagnostik yang digunakan oleh dokter untuk menekan lidah agar dapat melihat rongga tenggorokan dan amandel pasien dengan jelas?",
+                options: [
+                    { text: "Laryngeal Mirror", isCorrect: false, rationale: "Laryngeal mirror adalah cermin kecil untuk melihat area rongga mulut/tenggorokan dari sudut tertentu." },
+                    { text: "Tongue Depressor", isCorrect: true, rationale: "Tongue depressor (spatel lidah) berfungsi menekan lidah ke bawah agar tenggorokan terlihat jelas." },
+                    { text: "Nasal Speculum", isCorrect: false, rationale: "Nasal speculum digunakan untuk membuka rongga hidung." },
+                    { text: "Reflex Hammer", isCorrect: false, rationale: "Reflex hammer digunakan untuk menguji refleks saraf lutut/otot." }
+                ],
+                hint: "Terbuat dari kayu, plastik, atau logam pipih yang diletakkan di atas lidah.",
+                tag: "Alat Diagnostik"
+            },
+            {
+                question: "Alat bedah berbentuk klem/pinset yang khusus digunakan oleh dokter bedah untuk menjepit jarum jahit (suture needle) saat melakukan penjahitan luka dinamakan...",
+                options: [
+                    { text: "Needle Holder", isCorrect: true, rationale: "Needle holder dirancang khusus dengan pegangan pengunci untuk memegang jarum jahit bedah dengan kuat." },
+                    { text: "Anatomy Pincet", isCorrect: false, rationale: "Pinset anatomi digunakan untuk memegang jaringan lunak tanpa merusaknya." },
+                    { text: "Tissue Forceps", isCorrect: false, rationale: "Pinset sirurgis/tissue forceps memiliki gigi untuk memegang jaringan kulit tebal." },
+                    { text: "Umbilical Cord Scissors", isCorrect: false, rationale: "Gunting ini khusus digunakan untuk memotong tali pusar bayi baru lahir." }
+                ],
+                hint: "Nama alat ini secara harfiah berarti 'pemegang jarum'.",
+                tag: "Alat Bedah"
+            },
+            {
+                question: "Jenis jarum pembedahan dan benang jahit yang dapat diserap sendiri oleh jaringan tubuh manusia (absorbable suture) adalah...",
+                options: [
+                    { text: "Silk Suture", isCorrect: false, rationale: "Benang sutera (silk) bersifat non-absorbable (tidak diserap tubuh)." },
+                    { text: "Nylon Suture", isCorrect: false, rationale: "Benang nilon tergolong non-absorbable dan harus dilepas setelah luka sembuh." },
+                    { text: "Catgut", isCorrect: true, rationale: "Catgut terbuat dari kolagen hewan dan dapat diserap (absorbable) secara alami oleh tubuh." },
+                    { text: "Polypropylene Suture", isCorrect: false, rationale: "Polypropylene bersifat sintetis non-absorbable." }
+                ],
+                hint: "Benang bedah alami ini terbuat dari jaringan kolagen.",
+                tag: "Benang Bedah"
+            },
+            {
+                question: "Alat kesehatan kateter urine yang dilengkapi dengan balon pada bagian ujungnya agar tidak mudah terlepas dari kandung kemih adalah...",
+                options: [
+                    { text: "Nelaton Catheter", isCorrect: false, rationale: "Nelaton catheter adalah kateter lurus tanpa balon pengunci." },
+                    { text: "Foley Catheter", isCorrect: true, rationale: "Foley catheter (balloon catheter) memiliki balon yang dapat ditiup air steril untuk mengunci posisi di kandung kemih." },
+                    { text: "IV Catheter", isCorrect: false, rationale: "IV catheter (abocath) dimasukkan ke pembuluh darah vena untuk infus." },
+                    { text: "Stomach Tube", isCorrect: false, rationale: "Stomach tube (NGT) dimasukkan melalui hidung menuju lambung." }
+                ],
+                hint: "Sering dipasangkan dengan Urine Bag pada pasien rawat inap.",
+                tag: "Catheter"
+            },
+            {
+                question: "Untuk menarik tepi jaringan luka ke samping agar area pembedahan di bagian tengah terbuka lebar dan mudah terlihat dokter, alat bedah yang digunakan adalah...",
+                options: [
+                    { text: "Retractor", isCorrect: true, rationale: "Retractor (pengait luka) berfungsi merenggangkan atau menarik tepi luka operasi." },
+                    { text: "Scalpel Blade", isCorrect: false, rationale: "Scalpel blade adalah pisau pemotong jaringan." },
+                    { text: "Curette", isCorrect: false, rationale: "Curette (kapor) digunakan untuk mengerok/membersihkan jaringan rahim." },
+                    { text: "Bandage Scissors", isCorrect: false, rationale: "Gunting pembalut untuk memotong kain perban." }
+                ],
+                hint: "Nama alat ini memiliki arti 'penarik' atau 'penahan penyingkap luka'.",
+                tag: "Alat Bedah"
+            },
+            {
+                question: "Alat kontrasepsi dalam rahim (AKDR) yang berbentuk huruf 'T' dan dililiti kawat tembaga untuk mengganggu pergerakan sperma dinamakan...",
+                options: [
+                    { text: "Lippes Loop", isCorrect: false, rationale: "Lippes loop adalah jenis IUD plastik berbelit-belit seperti spiral." },
+                    { text: "Copper-T", isCorrect: true, rationale: "Copper-T merupakan jenis IUD berbentuk huruf T yang dililiti tembaga (Cu)." },
+                    { text: "Implant / Susuk KB", isCorrect: false, rationale: "Implant (AKBK) dipasang di bawah kulit lengan atas, bukan di dalam rahim." },
+                    { text: "Tubektomi", isCorrect: false, rationale: "Tubektomi adalah prosedur bedah sterilisasi pemotongan saluran tuba falopi." }
+                ],
+                hint: "Menggabungkan nama bahan tembaga dan bentuk fisiknya yang mirip huruf kapital.",
+                tag: "Alat Kontrasepsi"
+            },
+            {
+                question: "Untuk mendeteksi adanya penyakit buta warna pada seseorang, dokter menggunakan buku tes khusus yang berisi deretan titik warna bermotif angka yang dikembangkan oleh...",
+                options: [
+                    { text: "Rene Laennec", isCorrect: false, rationale: "Rene Laennec adalah penemu stetoskop pertama dari kayu." },
+                    { text: "Shinobu Ishihara", isCorrect: true, rationale: "Ishihara Test Plate dikembangkan oleh Dr. Shinobu Ishihara untuk menguji buta warna." },
+                    { text: "W.C. Roentgen", isCorrect: false, rationale: "Roentgen adalah penemu sinar-X diagnostik." },
+                    { text: "Louis Pasteur", isCorrect: false, rationale: "Louis Pasteur adalah ilmuwan mikrobiologi dan vaksinasi." }
+                ],
+                hint: "Buku tes ini terkenal dengan nama 'Ishihara Test Plate'.",
+                tag: "Alat Diagnostik"
+            }
+        ];
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let selectedOptionIndex = null;
+
+        const startScreen = document.getElementById("start-screen");
+        const quizScreen = document.getElementById("quiz-screen");
+        const resultScreen = document.getElementById("result-screen");
+        
+        const questionText = document.getElementById("question-text");
+        const optionsContainer = document.getElementById("options-container");
+        const questionTracker = document.getElementById("question-tracker");
+        const tagBadge = document.getElementById("tag-badge");
+        const hintBox = document.getElementById("hint-box");
+        const hintText = document.getElementById("hint-text");
+        const feedbackBox = document.getElementById("feedback-box");
+        const feedbackTitle = document.getElementById("feedback-title");
+        const feedbackText = document.getElementById("feedback-text");
+        const btnNext = document.getElementById("btn-next");
+
+        function startQuiz() {
+            startScreen.classList.add("hidden");
+            quizScreen.classList.remove("hidden");
+            currentQuestionIndex = 0;
+            score = 0;
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            const currentQ = quizData[currentQuestionIndex];
+            selectedOptionIndex = null;
+            
+            // Update Text
+            questionTracker.innerText = `Soal ${currentQuestionIndex + 1} dari ${quizData.length}`;
+            tagBadge.innerText = `Topik: ${currentQ.tag}`;
+            questionText.innerText = currentQ.question;
+            hintText.innerText = currentQ.hint;
+
+            // Reset States
+            hintBox.classList.add("hidden");
+            feedbackBox.classList.add("hidden");
+            btnNext.disabled = true;
+            btnNext.classList.add("opacity-50", "cursor-not-allowed");
+
+            // Render Options
+            optionsContainer.innerHTML = "";
+            currentQ.options.forEach((opt, idx) => {
+                const button = document.createElement("button");
+                button.className = "w-full text-left p-4 rounded-xl border border-gray-200 hover:border-emerald-500 hover:bg-emerald-50/50 transition duration-150 flex items-center justify-between group";
+                button.onclick = () => selectOption(idx);
+                button.innerHTML = `
+                    <span class="text-sm md:text-base font-medium text-gray-700 group-hover:text-emerald-900">${opt.text}</span>
+                    <i class="fa-regular fa-circle text-gray-300 group-hover:text-emerald-500 text-lg"></i>
+                `;
+                optionsContainer.appendChild(button);
+            });
+        }
+
+        function selectOption(index) {
+            if (selectedOptionIndex !== null) return; // Prevent re-selection
+            selectedOptionIndex = index;
+            
+            const currentQ = quizData[currentQuestionIndex];
+            const selectedOpt = currentQ.options[index];
+            const optionButtons = optionsContainer.children;
+
+            // Enable Next Button
+            btnNext.disabled = false;
+            btnNext.classList.remove("opacity-50", "cursor-not-allowed");
+
+            // Highlight Options
+            currentQ.options.forEach((opt, idx) => {
+                const btn = optionButtons[idx];
+                const icon = btn.querySelector("i");
+                btn.onclick = null; // Disable clicking
+
+                if (opt.isCorrect) {
+                    btn.className = "w-full text-left p-4 rounded-xl border-2 border-emerald-500 bg-emerald-50 text-emerald-900 flex items-center justify-between font-medium";
+                    icon.className = "fa-solid fa-circle-check text-emerald-600 text-lg";
+                } else if (idx === index && !opt.isCorrect) {
+                    btn.className = "w-full text-left p-4 rounded-xl border-2 border-rose-500 bg-rose-50 text-rose-900 flex items-center justify-between font-medium";
+                    icon.className = "fa-solid fa-circle-xmark text-rose-600 text-lg";
+                } else {
+                    btn.className = "w-full text-left p-4 rounded-xl border border-gray-100 text-gray-400 flex items-center justify-between opacity-60";
+                }
+            });
+
+            // Show Rationale / Feedback
+            feedbackBox.classList.remove("hidden");
+            if (selectedOpt.isCorrect) {
+                score++;
+                feedbackBox.className = "p-4 rounded-xl mb-6 text-sm bg-emerald-100 border border-emerald-300 text-emerald-900 fade-in";
+                feedbackTitle.innerHTML = `<i class="fa-solid fa-circle-check me-2"></i>Tepat Sekali!`;
+            } else {
+                feedbackBox.className = "p-4 rounded-xl mb-6 text-sm bg-rose-100 border border-rose-300 text-rose-900 fade-in";
+                feedbackTitle.innerHTML = `<i class="fa-solid fa-triangle-exclamation me-2"></i>Kurang Tepat!`;
+            }
+            feedbackText.innerText = selectedOpt.rationale;
+        }
+
+        function toggleHint() {
+            hintBox.classList.toggle("hidden");
+        }
+
+        function nextQuestion() {
+            currentQuestionIndex++;
+            if (currentQuestionIndex < quizData.length) {
+                loadQuestion();
+            } else {
+                showResults();
+            }
+        }
+
+        function showResults() {
+            quizScreen.classList.add("hidden");
+            resultScreen.classList.remove("hidden");
+
+            const finalScore = Math.round((score / quizData.length) * 100);
+            document.getElementById("result-score").innerText = `${finalScore} / 100`;
+            document.getElementById("correct-count").innerText = `${score} Soal`;
+            document.getElementById("wrong-count").innerText = `${quizData.length - score} Soal`;
+
+            const iconBg = document.getElementById("result-icon-bg");
+            const icon = document.getElementById("result-icon");
+            const message = document.getElementById("result-message");
+
+            if (finalScore >= 80) {
+                iconBg.className = "w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-4 text-4xl shadow-lg bg-emerald-500";
+                icon.className = "fa-solid fa-trophy text-white";
+                message.innerText = "Luar biasa! Pemahaman Anda tentang Alat Kesehatan sangat baik!";
+            } else if (finalScore >= 60) {
+                iconBg.className = "w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-4 text-4xl shadow-lg bg-amber-500";
+                icon.className = "fa-solid fa-medal text-white";
+                message.innerText = "Bagus! Pelajari kembali beberapa detail alkes untuk nilai sempurna.";
+            } else {
+                iconBg.className = "w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-4 text-4xl shadow-lg bg-rose-500";
+                icon.className = "fa-solid fa-book-open text-white";
+                message.innerText = "Jangan berkecil hati. Yuk, baca ulang materi dan coba lagi!";
+            }
+        }
+
+        function resetQuiz() {
+            resultScreen.classList.add("hidden");
+            startScreen.classList.remove("hidden");
+        }
+    </script>
+</body>
+</html>
+```eof
+
+### Ringkasan Kuis:
+- **Jumlah Soal:** 10 Soal Pilihan Ganda.
+- **Cakupan Materi:** 
+  1. Alat/Bahan Pembalut (Kasa Steril/Gaas).
+  2. Alat Perawatan (Windring untuk ambeien).
+  3. Alat Menampung (Colostomy Bag).
+  4. Alat Diagnostik (Tongue Depressor & Ishihara Test).
+  5. Alat Bedah & Penjahitan (Needle Holder, Retractor).
+  6. Benang Bedah (Catgut Absorbable).
+  7. Kateter (Foley Catheter dengan balon).
+  8. Alat Kontrasepsi (Copper-T IUD).
+- **Fitur Interaktif:** Dilengkapi umpan balik (rasional) langsung untuk tiap jawaban yang dipilih, petunjuk (*hint*), pelacak progres, dan kalkulasi skor otomatis.
+
+Selamat berlatih!
